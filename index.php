@@ -18,8 +18,9 @@
 	$requestMethod = 'GET';
 
 	// twitter api endpoint data (account name and amount of tweets to GET)
-	$getfield = '?screen_name=BorisJohnson&count=15';
-
+	$getfield = '?screen_name=@BorisJohnson&count=15&tweet_mode=extended';
+	// $getfield = '?screen_name=BorisJohnson&count=1'; // for 140 char
+	
 	// make api call to twitter
 	$twitter = new TwitterAPIExchange( $settings );
 	$twitter->setGetfield( $getfield );
@@ -27,73 +28,74 @@
 	$response = $twitter->performRequest( true, array( CURLOPT_SSL_VERIFYHOST => 0, CURLOPT_SSL_VERIFYPEER => 0 ) );
 	// convert response data to JSON
 	$tweets = json_decode( $response, true );
-	
+
     /* display all info retrieved from twitter
      * echo '<pre>';
      * print_r( $tweets );
 	 */
 ?>
 
-<!-- -->
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<style> 
-	table, td {
-	border: 2px solid black;
-	}
-
-	#myTABLE {
-	width: 100%;
-	}
-</style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="styles.css">
+	<title>Latest Tweets</title>
 </head>
 <body>
+	<div class="wrapper">
+		<h1>Latest Tweet</h1>
 
-<div>
-	<h1 style="text-align:center">Latest Tweet</h1>
-<div>
+		<div class="tweet_tiles">
+			<?php foreach ( $tweets as $tweet ) : ?>
+				
+			<!-- <?php $userlink = "https://twitter.com/" . $tweet['user']['screen_name'];?> -->
 
-<table id="myTABLE">
+			<div class="single_tile" id="single_tile">
 
-	<?php 
-		$counter = 0; 
-		foreach ( $tweets as $tweet ) : 
-	?>
+				<div class="profile_picture">
+					<img src="<?php echo $tweet['user']['profile_image_url']; ?>" />
+					<a href="https://twitter.com/<?php echo $tweet['user']['screen_name']; ?>" target="_blank">
+					<b>@<?php echo $tweet['user']['screen_name']; ?></b>
+				</div>
 
-	<td>	
-		<?php $counter++; ?>
+				</a>
+				<br/>
+				<!-- For 140 char <?php echo $tweet['text']; ?> -->
+				<?php echo $tweet['full_text']; ?>
+				<br/>
+				<br/>
 
-		<img src="<?php echo $tweet['user']['profile_image_url']; ?>" />
-			<a href="https://twitter.com/<?php echo $tweet['user']['screen_name']; ?>" target="_blank">
-				<b>@<?php echo $tweet['user']['screen_name']; ?></b>
-			</a> tweeted:
-			<br />
-			<br />
-			<?php echo $tweet['text']; ?>
-			<br />
-			<br />
-				Tweeted on <?php echo $tweet['created_at']; ?>
-			<br />
-			<hr />
+				<div class="single_tile_date">
+					Tweeted on 
+					<?php 
+						$date = date_create($tweet['created_at']);
+						echo date_format($date, "d/m/Y H:i:s");
+					?>
+				</div>
+				<br/>
 
-		<?php
-			if ($counter == 3) {
-			$counter = 0;
-		?>
-		
-		<tr></tr>
-		
-		<?php } ?>
-	</td>	
+				<div id="myModal" class="modal">
+					<div class="modal-content">		
+						<div class="modal-header">
+							<span class="close">&times;</span>
+							<h2>Tweet</h2>
+						</div>
 
-	<?php endforeach; ?>
-</table>
+						<div class="modal-body">
+							<?php echo $tweet['full_text']; ?>
+						</div>
+					</div>
+				</div>
 
-<script>
-	function myFunction() {
-	document.getElementById("myTABLE").style.tableLayout = "fixed";
-	}
-</script>
+			</div>
+
+			<?php endforeach; ?>
+		</div>
+	</div>
+
+<script src="events.js"></script>
 
 </body>
 </html>
